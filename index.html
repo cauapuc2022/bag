@@ -366,7 +366,7 @@ body {
       </h1>
       
       <span class="badge">
-       Condição Bagaggio: 15% de desconto sobre o valor original
+       Condição Bagaggio: 10% de desconto sobre o valor original
       </span>
      </section>
      <main class="grid" id="grid">
@@ -395,7 +395,7 @@ body {
          Para alterar nome, SKU, preço ou quantidade inicial,
          procure o produto abaixo e edite os respectivos campos.
          price = valor original | qty = quantidade sugerida
-         O desconto de 15% é calculado pela função discounted().
+         O desconto de 10% é calculado pela função discounted().
          ========================================================= -->
     <script>
 const products = [
@@ -450,8 +450,8 @@ function loadOrder(){
 }
 
 
-const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); const discounted=p=>Math.round(p.price*.85*100)/100;
-function render(){const g=document.getElementById('grid');g.innerHTML='';products.filter(p=>p.active).forEach(p=>{let d=discounted(p);let el=document.createElement('article');el.className='card';el.innerHTML=`<button class="remove" title="Excluir item" onclick="removeItem(${p.id})">×</button><div class="photo"><img src="${p.img}" alt="${p.name}"></div><div class="info"><div class="sku">SKU ${p.sku}</div><div class="name">${p.name}</div><div class="prices"><div><div class="label">Valor original</div><div class="original">${brl(p.price)}</div></div><div style="text-align:right"><div class="label">Valor com desconto de setembro <span class="off">-15%</span></div><div class="bagprice">${brl(d)}</div></div></div><div class="controls"><div><div class="label">Quantidade</div><div class="qtybox"><button onclick="changeQty(${p.id},-1)">−</button><input type="number" min="0" value="${p.qty}" onchange="setQty(${p.id},this.value)"><button onclick="changeQty(${p.id},1)">+</button></div></div><div class="subtotal"><div class="label">Subtotal</div><b>${brl(d*p.qty)}</b></div></div></div>`;g.appendChild(el)}); if(!products.some(p=>p.active))g.innerHTML='<div class="empty">Todos os itens foram excluídos.</div>'; totals()}
+const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); const discounted=p=>Math.round(p.price*.90*100)/100;
+function render(){const g=document.getElementById('grid');g.innerHTML='';products.filter(p=>p.active).forEach(p=>{let d=discounted(p);let el=document.createElement('article');el.className='card';el.innerHTML=`<button class="remove" title="Excluir item" onclick="removeItem(${p.id})">×</button><div class="photo"><img src="${p.img}" alt="${p.name}"></div><div class="info"><div class="sku">SKU ${p.sku}</div><div class="name">${p.name}</div><div class="prices"><div><div class="label">Valor original</div><div class="original">${brl(p.price)}</div></div><div style="text-align:right"><div class="label">Valor com desconto de setembro <span class="off">-10%</span></div><div class="bagprice">${brl(d)}</div></div></div><div class="controls"><div><div class="label">Quantidade</div><div class="qtybox"><button onclick="changeQty(${p.id},-1)">−</button><input type="number" min="0" value="${p.qty}" onchange="setQty(${p.id},this.value)"><button onclick="changeQty(${p.id},1)">+</button></div></div><div class="subtotal"><div class="label">Subtotal</div><b>${brl(d*p.qty)}</b></div></div></div>`;g.appendChild(el)}); if(!products.some(p=>p.active))g.innerHTML='<div class="empty">Todos os itens foram excluídos.</div>'; totals()}
 
 
 function changeQty(id,n){let p=products[id];p.qty=Math.max(0,p.qty+n);saveOrder();render()}
