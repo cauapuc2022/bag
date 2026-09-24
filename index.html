@@ -426,15 +426,37 @@ const products = [
     {"name":"MOCHILA FLUMINENSE CASUAL 27","sku":"0239549626001","price":124.95,"qty":0,"unit":"UND","img":"imagens/imagem_32.jpg"}
 ].map((p,i)=>({...p,id:i,active:true}));
 
+// Salva e restaura o pedido no navegador (localStorage)
+const STORAGE_KEY = 'pedido_bagaggio_v1';
+function saveOrder(){
+    const state = products.map(p=>({sku:p.sku, qty:p.qty, active:p.active}));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function loadOrder(){
+    try{
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if(!Array.isArray(saved)) return;
+        const bySku = new Map(saved.map(x=>[String(x.sku),x]));
+        products.forEach(p=>{
+            const x=bySku.get(String(p.sku));
+            if(x){
+                p.qty=Math.max(0,parseInt(x.qty)||0);
+                p.active=x.active!==false;
+            }
+        });
+    }catch(e){ console.warn('Não foi possível restaurar o pedido salvo.',e); }
+}
+
+
 const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); const discounted=p=>Math.round(p.price*.85*100)/100;
 function render(){const g=document.getElementById('grid');g.innerHTML='';products.filter(p=>p.active).forEach(p=>{let d=discounted(p);let el=document.createElement('article');el.className='card';el.innerHTML=`<button class="remove" title="Excluir item" onclick="removeItem(${p.id})">×</button><div class="photo"><img src="${p.img}" alt="${p.name}"></div><div class="info"><div class="sku">SKU ${p.sku}</div><div class="name">${p.name}</div><div class="prices"><div><div class="label">Valor original</div><div class="original">${brl(p.price)}</div></div><div style="text-align:right"><div class="label">Valor com desconto de setembro <span class="off">-15%</span></div><div class="bagprice">${brl(d)}</div></div></div><div class="controls"><div><div class="label">Quantidade</div><div class="qtybox"><button onclick="changeQty(${p.id},-1)">−</button><input type="number" min="0" value="${p.qty}" onchange="setQty(${p.id},this.value)"><button onclick="changeQty(${p.id},1)">+</button></div></div><div class="subtotal"><div class="label">Subtotal</div><b>${brl(d*p.qty)}</b></div></div></div>`;g.appendChild(el)}); if(!products.some(p=>p.active))g.innerHTML='<div class="empty">Todos os itens foram excluídos.</div>'; totals()}
 
 
-function changeQty(id,n){let p=products[id];p.qty=Math.max(0,p.qty+n);render()}
+function changeQty(id,n){let p=products[id];p.qty=Math.max(0,p.qty+n);saveOrder();render()}
 
-function setQty(id,v){products[id].qty=Math.max(0,parseInt(v)||0);render()}
+function setQty(id,v){products[id].qty=Math.max(0,parseInt(v)||0);saveOrder();render()}
 
-function removeItem(id){products[id].active=false;render()}
+function removeItem(id){products[id].active=false;saveOrder();render()}
 
 
 function totals(){let a=products.filter(p=>p.active&&p.qty>0);let total=a.reduce((s,p)=>s+discounted(p)*p.qty,0);document.getElementById('items').textContent=a.length;document.getElementById('topTotal').textContent=brl(total);document.getElementById('grand').textContent=brl(total)}
@@ -443,7 +465,7 @@ function totals(){let a=products.filter(p=>p.active&&p.qty>0);let total=a.reduce
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
 
-function downloadExcel(){let a=products.filter(p=>p.active&&p.qty>0);if(!a.length){alert('Selecione ao menos um item.');return;} let rows=a.map(p=>`<Row><Cell><Data ss:Type="String">${esc(p.sku)}</Data></Cell><Cell><Data ss:Type="Number">${p.qty}</Data></Cell></Row>`).join('');let xml=`<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Pedido"><Table><Row><Cell><Data ss:Type="String">SKU</Data></Cell><Cell><Data ss:Type="String">QTD</Data></Cell></Row>${rows}</Table></Worksheet></Workbook>`;let blob=new Blob([xml],{type:'application/vnd.ms-excel'});let u=URL.createObjectURL(blob);let x=document.createElement('a');x.href=u;x.download='PEDIDO_BAGAGGIO.xls';document.body.appendChild(x);x.click();x.remove();URL.revokeObjectURL(u)}render();
+function downloadExcel(){let a=products.filter(p=>p.active&&p.qty>0);if(!a.length){alert('Selecione ao menos um item.');return;} let rows=a.map(p=>`<Row><Cell><Data ss:Type="String">${esc(p.sku)}</Data></Cell><Cell><Data ss:Type="Number">${p.qty}</Data></Cell></Row>`).join('');let xml=`<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Pedido"><Table><Row><Cell><Data ss:Type="String">SKU</Data></Cell><Cell><Data ss:Type="String">QTD</Data></Cell></Row>${rows}</Table></Worksheet></Workbook>`;let blob=new Blob([xml],{type:'application/vnd.ms-excel'});let u=URL.createObjectURL(blob);let x=document.createElement('a');x.href=u;x.download='PEDIDO_BAGAGGIO.xls';document.body.appendChild(x);x.click();x.remove();URL.revokeObjectURL(u)}loadOrder();render();
     </script>
 </body>
 </html>
