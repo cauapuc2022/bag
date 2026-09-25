@@ -429,9 +429,21 @@ const products = [
 ].map((p,i)=>({...p,id:i,active:true}));
 
 // Salva e restaura o pedido no navegador (localStorage)
-// Versão do carrinho: altere este valor quando uma atualização precisar ignorar carrinhos antigos
-const SITE_VERSION = '2026-09-25-02';
-const STORAGE_KEY = 'pedido_bagaggio_' + SITE_VERSION;
+// NOVO CICLO DO CARRINHO A PARTIR DE 25/09/2026
+// Esta chave de limpeza roda uma única vez em cada navegador e apaga
+// qualquer carrinho Bagaggio salvo pelas versões anteriores do site.
+const RESET_KEY = 'pedido_bagaggio_reset_2026_09_25';
+if (localStorage.getItem(RESET_KEY) !== 'ok') {
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('pedido_bagaggio')) {
+            localStorage.removeItem(key);
+        }
+    });
+    localStorage.setItem(RESET_KEY, 'ok');
+}
+
+// A partir de agora, somente esta nova chave será utilizada.
+const STORAGE_KEY = 'pedido_bagaggio_novo_2026_09_25';
 function saveOrder(){
     const state = products.map(p=>({sku:p.sku, qty:p.qty, active:p.active}));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
