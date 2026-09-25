@@ -429,7 +429,9 @@ const products = [
 ].map((p,i)=>({...p,id:i,active:true}));
 
 // Salva e restaura o pedido no navegador (localStorage)
-const STORAGE_KEY = 'pedido_bagaggio_v1';
+// Versão do carrinho: altere este valor quando uma atualização precisar ignorar carrinhos antigos
+const SITE_VERSION = '2026-09-25-02';
+const STORAGE_KEY = 'pedido_bagaggio_' + SITE_VERSION;
 function saveOrder(){
     const state = products.map(p=>({sku:p.sku, qty:p.qty, active:p.active}));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
